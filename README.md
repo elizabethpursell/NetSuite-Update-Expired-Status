@@ -19,14 +19,42 @@ This project automatically sets inventory details to expired when their expirati
 ## Project Setup
 ### Saved Searches
 Be sure to note the saved search ID.
-- **Search to Closed PO Items:**
-    - **Function:** collects all the open purchase order line items; used to find internal IDs of purchase orders that have closeable line items
+- **Search for Expired Inventory By Bins:**
+    - **Function:** collects all expired inventory details, grouped by their bin numbers, lot numbers, and locations
+    - **Search Type:** Inventory Detail
+    - **Criteria:** Expiration Date is before today, Status is Good, Inventory Number: Available is greater than 0
+    - **Result Columns:** Internal ID, Status, Item, Number, Location, Expiration Date, Inventory Number: Available, Bin Number
+    - **Summary Types:** Group the following fields: Status, Item, Number, Location, Expiration Date, Inventory Number: Available, Bin Number
+    - **Sort By:** Number, Bin Number, Location
+    - **Filters:** Number, Bin Number, Item
+    - **Permissions:** Public
+- **Search for Expired Status Changes:**
+    - **Function:** collects all the Inventory Status Change records that were automatically created
     - **Search Type:** Transaction
-    - **Criteria:** Record Type starts with purchaseorder, Closed is false, Main Line is false
-    - **Result Columns:** Document Number, Item : Name, Closed, Quantity, Quantity Billed, Quantity Fulfilled/Received, Status, Line ID, Internal ID
+    - **Criteria:** Type is Inventory Status Change, Date is on today, Main Line is false
+    - **Result Columns:** Inventory Detail: Location, Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Expiration Date, Inventory Detail: Item
+    - **Summary Types:** Group the following fields: Inventory Detail: Location, Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Expiration Date, Inventory Detail: Item
+    - **Sort By:** Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Location
+    - **Permissions:** Public
+- **Search for Expired Quantity:**
+    - **Function:** finds the quantity available in each bin; bin number, item, location, and lot number filters are applied to this to find the bin quantity
+    - **Search Type:** Item
+    - **Criteria:** Inventory Number/Bin on Hand: Available is greater than 0
+    - **Result Columns:** Name, Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location, Inventory Number/Bin on Hand: Available
+    - **Sort By:** Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location
+    - **Filters:** Inventory Detail: Status, Name, Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number: Expiration Date, Inventory Number/Bin on Hand: Location
+    - **Permissions:** Public
+- **Search for Expired Inventory:**
+    - **Function:** collects all the expired inventory and the bin available quantities; Inventory Balance search types cannot be used in SuiteScript
+    - **Search Type:** Inventory Balance
+    - **Criteria:** Inventory Number: Expiration Date is before today, Status is Good, Available is greater than 0
+    - **Result Columns:** Status, Item, Inventory Number, Bin Number, Location, Inventory Number: Expiration Date, Available
+    - **Sort By:** Inventory Number, Bin Number, Location
     - **Permissions:** Public
 ### Uploading to NetSuite
 - **Adding a SuiteScript to the File Cabinet:** navigate Customization>Scripting>Scripts>New; next to the "Script File" dropdown, press the plus sign to upload a new SuiteScript file; select the NetSuite folder that you want to store the SuiteScript files in; under "Select File," press the "Choose File" button; select the SuiteScript file that you want to upload and press open; save and press the blue "Create Script Record" button; name the file, input a relevant ID, and save
+### Adding New Inventory Status
+- **Adding Expired Status to Inventory Status List:** navigate List>Supply Chain>Inventory Statuses>New; input the name of the new Inventory Status as "Expired"; uncheck the boxes labeled "Making Inventory Available for Commitment" and "Make Inventory Available for Allocation and Planning"; save the new record by pressing the blue button
 ## File Descriptions
 ### set_expired_status.js
 - **Programming Languages:** JavaScript, SuiteScript 2.0
