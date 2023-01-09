@@ -10,7 +10,7 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
     }
     function map(context){
         var searchResult = JSON.parse(context.value);
-        log.error("Result", searchResult);
+        //log.error("Result", searchResult);
         var location = searchResult.values["GROUP(location)"].value;
         var prevStatus = searchResult.values["GROUP(status)"].value;
         var itemId = searchResult.values["GROUP(item)"].value;
@@ -18,8 +18,9 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
         var lotNum = searchResult.values["GROUP(inventorynumber)"].value;
         var lotTxt = searchResult.values["GROUP(inventorynumber)"].text;
         var binNum = searchResult.values["GROUP(binnumber)"].value;
+        var useBins = searchResult.values["GROUP(usesbins.location)"];
         var quantity = searchResult.values["GROUP(quantityavailable.inventoryNumber)"];     //use quantity available if location doesn't use bins
-        if(location == 2 && location == "2"){
+        if(useBins == "T" || useBins == true){
             quantity = getBinQuantity(location, itemtxt, lotTxt, binNum);           //use bin quantity if location uses bins
         }
         createInventoryStatusChange(location, prevStatus, itemId, lotNum, binNum, quantity);        //create inventory status change record with imported data
@@ -182,8 +183,6 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
         const items = [];
         const lots = [];
         const dates = [];
-        const bins = [];
-        const locations = [];
         var emailBody = "";
         var changesSearch = search.load({               //searches for items that were set to expired today
             id: 'customsearchinv_status_change'
@@ -205,65 +204,34 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
                     join: "inventorydetail",
                     summary: "GROUP"
                 });
-                var currentBin = result.getText({
-                    name: "binnumber",
-                    join: "inventorydetail",
-                    summary: "GROUP"
-                });
-                var currentLocation = result.getText({
-                    name: "location",
-                    join: "inventorydetail",
-                    summary: "GROUP"
-                });
-                bins.push(currentBin);          //add item data to arrays
-                items.push(currentItem);
+                items.push(currentItem);        //add item data to arrays
                 lots.push(currentLot);
                 dates.push(currentDate);
-                locations.push(currentLocation);
             }
             return true;
         });
-        if(items.length == 0){            //execute if no inventory statuses were changed
-            emailBody = "No inventory was set to expired status.";
-        }
-        else{               //execute if inventory statuses were changed
+        if(items.length > 0){            //execute if inventory statuses were changed
             emailBody = "<b>The Following Inventory Has Been Set to Expired:</b><br><br>";
             for(var i = 0; i < items.length; i++){
                 var currentItem = items[i].toString();
                 var currentLot = lots[i].toString();
-                var currentBin = bins[i].toString();
                 var currentDate = dates[i].toString();
-                var currentLocation = locations[i].toString();
-                emailBody += " - <b>" + currentItem + "</b>: Location: " + currentLocation + ", Lot " + currentLot + ", Bin: " + currentBin + " (Expires " + currentDate + ")<br>";
+                emailBody += " - <b>" + currentItem + "</b>: Lot " + currentLot + " (Expired " + currentDate + ")<br>";
             }
-        }
-        var senderRecord = record.load({		//check if desired email sender is inactive
-            type: record.Type.EMPLOYEE,
-            id: 2655			//internal id of user to try to send email from
-        });
-        var isInactive = senderRecord.getValue({
-            fieldId: "isinactive"
-        });
-        if(isInactive == true){			//send email to/from Tim if user inactive
-            emailBody = "The person who this email was originally sent to no longer has access to NetSuite<br><br>" + emailBody;
-            log.error("Email", emailBody);
-            log.error("Email Sent1");
-            email.send({
-                author: -5,			//internal ID of user
-                recipients: "troth@stuffedpuffs.com",
-                subject: "Daily Item Expiration Update -- Error",
-                body: emailBody
-            });
-        }
-        else{            //send email if user active
-            email.send({
-                author: 2655,		//internal ID of user
-                recipients: "epursell@stuffedpuffs.com",
-                subject: "Daily Inventory Expiration Update",
-                body: emailBody
-            });
-            log.error("Email", emailBody);
-            log.error("Email Sent2");
+            try{
+                email.send({
+                    author: -5,		//internal ID of user
+                    recipients: ["troth@stuffedpuffs.com", "jworthy@factory-llc.com", "fvarano@stuffedpuffs.com", "jvandyne@stuffedpuffs.com", "cmetzger@factory-llc.com", "kpond@stuffedpuffs.com", "sjones@stuffedpuffs.com", "ajohnson@factory-llc.com", "mhinnershitz@factory-llc.com"],
+                    subject: "Expired Inventory Notification",
+                    body: emailBody
+                });
+                log.error("Email", emailBody);
+                log.error("Email Sent");
+            }
+            catch(err){
+                log.error("Email", emailBody);
+                log.error("Email was not sent");
+            }
         }
         log.error("Number of Items Changed", items.length);      //log the number of inventory statuses changed
     }
