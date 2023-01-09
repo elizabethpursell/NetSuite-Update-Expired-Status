@@ -32,7 +32,7 @@ Be sure to note the saved search ID.
     - **Function:** collects all the Inventory Status Change records that were automatically created
     - **Search Type:** Transaction
     - **Criteria:** Type is Inventory Status Change, Date is on today, Main Line is false
-    - **Result Columns:** Inventory Detail: Location, Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Expiration Date, Inventory Detail: Item
+    - **Result Columns:** Inventory Detail: Number, Inventory Detail: Expiration Date, Inventory Detail: Item
     - **Summary Types:** Group the following fields: Inventory Detail: Location, Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Expiration Date, Inventory Detail: Item
     - **Sort By:** Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Location
     - **Permissions:** Public
@@ -40,7 +40,7 @@ Be sure to note the saved search ID.
     - **Function:** finds the quantity available in each bin; bin number, item, location, and lot number filters are applied to this to find the bin quantity
     - **Search Type:** Item
     - **Criteria:** Inventory Number/Bin on Hand: Available is greater than 0
-    - **Result Columns:** Name, Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location, Inventory Number/Bin on Hand: Available
+    - **Result Columns:** Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location, Inventory Number/Bin on Hand: Available
     - **Sort By:** Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location
     - **Filters:** Inventory Detail: Status, Name, Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number: Expiration Date, Inventory Number/Bin on Hand: Location
     - **Permissions:** Public
