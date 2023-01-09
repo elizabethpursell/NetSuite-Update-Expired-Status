@@ -33,7 +33,7 @@ Be sure to note the saved search ID.
     - **Search Type:** Transaction
     - **Criteria:** Type is Inventory Status Change, Date is on today, Main Line is false
     - **Result Columns:** Inventory Detail: Number, Inventory Detail: Expiration Date, Inventory Detail: Item
-    - **Summary Types:** Group the following fields: Inventory Detail: Location, Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Expiration Date, Inventory Detail: Item
+    - **Summary Types:** Group the following fields: Inventory Detail: Number, Inventory Detail: Expiration Date, Inventory Detail: Item
     - **Sort By:** Inventory Detail: Number, Inventory Detail: Bin Number, Inventory Detail: Location
     - **Permissions:** Public
 - **Search for Expired Quantity:**
