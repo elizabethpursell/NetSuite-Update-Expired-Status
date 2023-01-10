@@ -10,7 +10,7 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
     }
     function map(context){
         var searchResult = JSON.parse(context.value);
-        //log.error("Result", searchResult);
+        log.error("Result", searchResult);
         var location = searchResult.values["GROUP(location)"].value;
         var prevStatus = searchResult.values["GROUP(status)"].value;
         var itemId = searchResult.values["GROUP(item)"].value;
@@ -221,7 +221,7 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
             try{
                 email.send({
                     author: -5,		//internal ID of user
-                    recipients: ["troth@stuffedpuffs.com", "jworthy@factory-llc.com", "fvarano@stuffedpuffs.com", "jvandyne@stuffedpuffs.com", "cmetzger@factory-llc.com", "kpond@stuffedpuffs.com", "sjones@stuffedpuffs.com", "ajohnson@factory-llc.com", "mhinnershitz@factory-llc.com"],
+                    recipients: ["fakeemail@gmail.com"],
                     subject: "Expired Inventory Notification",
                     body: emailBody
                 });
