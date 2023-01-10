@@ -23,8 +23,8 @@ Be sure to note the saved search ID.
     - **Function:** collects all expired inventory details, grouped by their bin numbers, lot numbers, and locations
     - **Search Type:** Inventory Detail
     - **Criteria:** Expiration Date is before today, Status is Good, Inventory Number: Available is greater than 0
-    - **Result Columns:** Internal ID, Status, Item, Number, Location, Expiration Date, Inventory Number: Available, Bin Number
-    - **Summary Types:** Group the following fields: Status, Item, Number, Location, Expiration Date, Inventory Number: Available, Bin Number
+    - **Result Columns:** Internal ID, Status, Item, Number, Location, Expiration Date, Inventory Number: Available, Bin Number, Location: Use Bins
+    - **Summary Types:** Group the following fields: Status, Item, Number, Location, Expiration Date, Inventory Number: Available, Bin Number, Location: Use Bins
     - **Sort By:** Number, Bin Number, Location
     - **Filters:** Number, Bin Number, Item
     - **Permissions:** Public
