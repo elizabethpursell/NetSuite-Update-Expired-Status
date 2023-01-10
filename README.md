@@ -1,6 +1,6 @@
 # NetSuite-Set-Expired-Status
 ## Project Overview
-<img width="626" alt="statusEmail" src="https://user-images.githubusercontent.com/94419306/211584581-b2807b28-ece2-4cd8-9c18-a8add4b39e0d.png">
+<img width="626" alt="statusEmail" src="https://user-images.githubusercontent.com/94419306/211615031-9647d3d7-0119-451e-8a71-3360be0fdd96.png">
 
 ### Purpose
 This project automatically sets inventory details to expired when their expiration date has passed using the Inventory Status Change record. It is a scheduled Map/Reduce script that runs every weekday at 9am and sends out a summary email of all the changes made.
