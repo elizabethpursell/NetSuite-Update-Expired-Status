@@ -40,7 +40,7 @@ Be sure to note the saved search ID.
     - **Function:** finds the quantity available in each bin; bin number, item, location, and lot number filters are applied to this to find the bin quantity
     - **Search Type:** Item
     - **Criteria:** Inventory Number/Bin on Hand: Available is greater than 0
-    - **Result Columns:** Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location, Inventory Number/Bin on Hand: Available
+    - **Result Columns:** Name, Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location, Inventory Number/Bin on Hand: Available
     - **Sort By:** Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number/Bin on Hand: Location
     - **Filters:** Inventory Detail: Status, Name, Inventory Number/Bin on Hand: Inventory Number, Inventory Number/Bin on Hand: Bin Number, Inventory Number: Expiration Date, Inventory Number/Bin on Hand: Location
     - **Permissions:** Public
