@@ -11,7 +11,7 @@ This project automatically sets inventory details to expired when their expirati
 - Saved Searches
 ### Prerequisites
 - SuiteScript/JavaScript
-  - Modules: N/search, N/record, N/email
+  - Modules: N/search, N/record, N/email, N/url
   - SuiteScript Types: Scheduled Script
   - API Version: 2.x
   - JSDoc Tags
