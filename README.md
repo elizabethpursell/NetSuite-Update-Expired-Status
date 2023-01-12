@@ -1,4 +1,4 @@
-# NetSuite-Set-Expired-Status
+# NetSuite-Update-Expired-Status
 ## Project Overview
 <img width="626" alt="statusEmail" src="https://user-images.githubusercontent.com/94419306/211615031-9647d3d7-0119-451e-8a71-3360be0fdd96.png">
 
