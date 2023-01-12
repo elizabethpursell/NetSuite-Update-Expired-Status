@@ -2,14 +2,14 @@
  * @NApiVersion 2.x
  * @NScriptType MapReduceScript
  */
-define(['N/search', 'N/record', 'N/email'], function(search, record, email){
+define(['N/search', 'N/record', 'N/email', 'N/url'], function(search, record, email, url){
     function getInputData(){
         return search.load({
             id: 'customsearchexpired_bins'          //gets expired inventory details grouped by bins
         });
     }
     function map(context){
-        var searchResult = JSON.parse(context.value);
+        var searchResult = JSON.parse(context.value);           //get search result values
         log.error("Result", searchResult);
         var location = searchResult.values["GROUP(location)"].value;
         var prevStatus = searchResult.values["GROUP(status)"].value;
@@ -68,22 +68,22 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
         });
         return quantity;
     }
-    function createInventoryStatusChange(location, prevStatus, itemId, lotNum, binNum, quantity){
-        var parentRecord = record.create({                  //create inventory status change record that will set the inventory detail to Expired
+    function createInventoryStatusChange(location, prevStatus, itemId, lotNum, binNum, quantity, newStatus){
+        var parentRecord = record.create({                  //create inventory status change record
             type: record.Type.INVENTORY_STATUS_CHANGE,
             isDynamic: true
         });
-        parentRecord.setValue({
+        parentRecord.setValue({             //set body values
             fieldId: 'location',
-            value: location
+            value: parseInt(location)
         });
         parentRecord.setValue({
             fieldId: "previousstatus",
-            value: prevStatus
+            value: parseInt(prevStatus)
         });
         parentRecord.setValue({
             fieldId: "revisedstatus",
-            value: 6
+            value: parseInt(newStatus)
         });
         parentRecord.selectNewLine({
             sublistId: "inventory"
@@ -91,13 +91,31 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
         parentRecord.setCurrentSublistValue({
             sublistId: "inventory",
             fieldId: "item",
-            value: itemId
+            value: parseInt(itemId)
         });
         parentRecord.setCurrentSublistValue({
             sublistId: "inventory",
             fieldId: "quantity",
-            value: quantity
+            value: parseInt(quantity)
         });
+
+        var subRecordData = createSubrecord(parentRecord, lotNum, binNum, quantity);        //create subrecord
+
+        if(subRecordData.added){
+            log.error("Saving Record");
+            subRecordData.parentRecord.commitLine({       //save record and subrecord if all fields were completed
+                sublistId: "inventory"
+            });
+            subRecordData.parentRecord.save();
+        }
+        else{
+            log.error("Unable to commit subrecord");
+            subRecordData.parentRecord.cancelLine({           //delete subrecord if fields not complete
+                sublistId:"inventory"
+            });
+        }
+    }
+    function createSubrecord(parentRecord, lotNum, binNum, quantity){
         var subRecord = parentRecord.getCurrentSublistSubrecord({       //create inventory detail subrecord
             sublistId: "inventory",
             fieldId: "inventorydetail"
@@ -106,21 +124,24 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
             sublistId: "inventoryassignment"
         });
         try{
-            subRecord.setCurrentSublistValue({      //add lot number if it exists
+            subRecord.setCurrentSublistValue({      //try to add lot number
                 sublistId: "inventoryassignment",
                 fieldId: "issueinventorynumber",
-                value: lotNum
+                value: parseInt(lotNum)
             });
         }
         catch(err){
-            log.error("Lot Number not an option");
-            added = false;
+            log.error("Lot Number not an option");      //break if lot number not added
+            return {
+                "added": false,
+                "parentRecord": parentRecord,
+                "subRecord": subRecord
+            };
         }
         var index = subRecord.getCurrentSublistIndex({
             sublistId: "inventoryassignment"
         });
-        var binAdded = false;
-        try{
+        try{            //try to add bin number
             subRecord.getSublistField({             //check if bin number field exists
                 sublistId: "inventoryassignment",
                 fieldId: "binnumber",
@@ -130,59 +151,50 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
                 subRecord.setCurrentSublistValue({      //add bin number if it exists
                     sublistId: "inventoryassignment",
                     fieldId: "binnumber",
-                    value: binNum
+                    value: parseInt(binNum)
                 });
-                binAdded = true;
             }
             catch(err){
-                log.error("Bin number not found");
-                added = false;
-                binAdded = false;
+                log.error("Bin number not an option");      //break if bin number not added
+                return {
+                    "added": false,
+                    "parentRecord": parentRecord,
+                    "subRecord": subRecord
+                };
             }
-        }
-        catch(err){         //if bin number field doesn't exist, location doesn't use bins
-            log.error("Bin number not needed");
-            binAdded = true;
-        }
-        if(binAdded){           //if bin added, try to add quantity
-            try{
-                subRecord.setCurrentSublistValue({
-                    sublistId: "inventoryassignment",
-                    fieldId: "quantity",
-                    value: quantity
-                });
-                subRecord.commitLine({
-                    sublistId: "inventoryassignment"
-                });
-                added = true;
-            }
-            catch(err){
-                log.error("Unable to commit inventory detail; Invalid Quantity");
-                added = false;
-            }
-        }
-        try{
-            parentRecord.commitLine({       //line commits if all field values were successfully filled
-                sublistId: "inventory"
-            });
-            added = true;
         }
         catch(err){
-            log.error("Unable to commit subrecord");
-            parentRecord.cancelLine({           //delete subrecord if not committed
-                sublistId:"inventory"
+            log.error("Bin number not needed");
+        }
+        try{
+            subRecord.setCurrentSublistValue({          //set quantity if valid
+                sublistId: "inventoryassignment",
+                fieldId: "quantity",
+                value: parseInt(quantity)
             });
-            added = false;
+            subRecord.commitLine({
+                sublistId: "inventoryassignment"
+            });
         }
-        if(added == true){          //if all field values are filled, save record; status set to Expired
-            log.error("Saving Record");
-            parentRecord.save();
+        catch(err){
+            log.error("Invalid Quantity");          //break if quantity invalid
+            return {
+                "added": false,
+                "parentRecord": parentRecord,
+                "subRecord": subRecord
+            };
         }
+        return {                //return with added = true
+            "added": true,
+            "parentRecord": parentRecord,
+            "subRecord": subRecord
+        };
     }
     function summarize(summary){
         const items = [];
         const lots = [];
         const dates = [];
+        const urls = [];
         var emailBody = "";
         var changesSearch = search.load({               //searches for items that were set to expired today
             id: 'customsearchinv_status_change'
@@ -193,6 +205,16 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
                     name: "inventorynumber",
                     join: "inventorydetail",
                     summary: "GROUP"
+                });
+                var lotId = result.getValue({
+                    name: "inventorynumber",
+                    join: "inventorydetail",
+                    summary: "GROUP"
+                });
+                var currentURL = url.resolveRecord({
+                    recordType: "inventorynumber",
+                    recordId: parseInt(lotId),
+                    isEditMode: true
                 });
                 var currentItem = result.getText({
                     name: "item",
@@ -207,6 +229,7 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
                 items.push(currentItem);        //add item data to arrays
                 lots.push(currentLot);
                 dates.push(currentDate);
+                urls.push(currentURL);
             }
             return true;
         });
@@ -216,12 +239,13 @@ define(['N/search', 'N/record', 'N/email'], function(search, record, email){
                 var currentItem = items[i].toString();
                 var currentLot = lots[i].toString();
                 var currentDate = dates[i].toString();
-                emailBody += " - <b>" + currentItem + "</b>: Lot " + currentLot + " (Expired " + currentDate + ")<br>";
+                var currentURL = urls[i].toString();
+                emailBody += " - <b><a href=" + currentURL + ">" + currentItem + "</a></b>: Lot " + currentLot + " (Expired " + currentDate + ")<br>";
             }
             try{
                 email.send({
                     author: -5,		//internal ID of user
-                    recipients: ["fakeemail@gmail.com"],
+                    recipients: ["troth@stuffedpuffs.com", "jworthy@factory-llc.com", "fvarano@stuffedpuffs.com", "jvandyne@stuffedpuffs.com", "cmetzger@factory-llc.com", "kpond@stuffedpuffs.com", "sjones@stuffedpuffs.com", "ajohnson@factory-llc.com", "mhinnershitz@factory-llc.com", "epursell@stuffedpuffs.com"],
                     subject: "Expired Inventory Notification",
                     body: emailBody
                 });
